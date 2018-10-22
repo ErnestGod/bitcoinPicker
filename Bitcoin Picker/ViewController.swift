@@ -14,6 +14,8 @@ class ViewController: UIViewController, UIPickerViewDelegate, UIPickerViewDataSo
     
     let baseURL = "https://apiv2.bitcoinaverage.com/indices/global/ticker/BTC"
     let currencyArray = ["AUD", "BRL","CAD","CNY","EUR","GBP","HKD","IDR","ILS","INR","JPY","MXN","NOK","NZD","PLN","RON","RUB","SEK","SGD","USD","ZAR"]
+    let currencySymbolArray = ["$", "R$", "$", "¥", "€", "£", "$", "Rp", "₪", "₹", "¥", "$", "kr", "$", "zł", "lei", "₽", "kr", "$", "$", "R"]
+    var currencySelected = ""
     var finalURL = ""
     
     //Pre-setup IBOutlets
@@ -44,6 +46,7 @@ class ViewController: UIViewController, UIPickerViewDelegate, UIPickerViewDataSo
         finalURL = baseURL + currencyArray[row]
         print(finalURL)
         getBitcoinData(finalURL)
+        currencySelected = currencySymbolArray[row]
     }
     
     //MARK: - Networking
@@ -52,11 +55,11 @@ class ViewController: UIViewController, UIPickerViewDelegate, UIPickerViewDataSo
         Alamofire.request(finalURL, method: .get).responseJSON { (response) in
             if response.result.isSuccess {
                 print("Success! I've got the bitcoin data")
-                let bitcoinJSON : JSON = JSON(response.result.value)
+                let bitcoinJSON : JSON = JSON(response.result.value!)
                 self.updateBitcoinData(json: bitcoinJSON)
                 print(bitcoinJSON)
             } else {
-                print("Error: \(response.result.error)")
+                print("Error: \(String(describing: response.result.error))")
             }
         }
     }
@@ -64,14 +67,12 @@ class ViewController: UIViewController, UIPickerViewDelegate, UIPickerViewDataSo
     //MARK: - JSON Parsing
     /********************/
     func updateBitcoinData(json: JSON) {
-        if let result = json["averages"]["day"].double {
+        if let bitcoinResult = json["ask"].double {
+            bitcoinPriceLabel.text  = "\(bitcoinResult) " + currencySelected
             
         } else {
-            bitcoinPriceLabel.text = "Data Unavailable"
+            bitcoinPriceLabel.text = "Price unavailable"
         }
-        
-        
-        
         
     }
     
